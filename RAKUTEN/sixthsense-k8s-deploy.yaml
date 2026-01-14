@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: k8s-agent
+  name: k8s-agent
+  namespace: k8s-agent
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: k8s-agent
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: k8s-agent
+    spec:
+      containers:
+      - env:
+        - name: SS_AUTHENTICATION
+          value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZWFtSWQiOiIxYzgwMjc0NC1kZDNhLTRjODAtOTkyMC1mNTMxMDg4M2JjZTQiLCJiaWxsaW5nX2lkIjoiYzNjYTZmNmEtZGUyNC00MjhjLTg0YjktZTVlMDg2ZDM5NDNlIiwiaWF0IjoxNzE2NTMxNTg0LCJhdWQiOiJvYXAiLCJpc3MiOiJzaXh0aC1zZW5zLWF1dGgifQ.fvPQfDalMZ4jkbW7vK_Jar3NN6SpGndyZUXYHgzYcaU
+        - name: SS_METRIC_URL
+          value: http://kube-state-metrics.kube-system.svc.cluster.local:8080/metrics
+        - name: SS_CADVISOR_URL
+        - name: SS_LOGGING
+          value: debug
+        - name: SS_SERVICE_NAME
+          value: limestone-uat
+        - name: SS_SECURE
+          value: "false"
+        - name: SS_BACKEND
+          value: grpc-collector-sixthsense.invoicemart.com:443
+        - name: SS_DEVELOPMENT
+          value: "false"
+        - name: SS_NAMESPACES
+          value: limestone-uat,k8s-agent,kube-system
+        - name: SS_RESTART_MEMORY_LIMIT
+          value: "500"
+        - name: SS_RESTART_DURATION
+          value: "12"
+        image: 297233738884.dkr.ecr.ap-south-1.amazonaws.com/codebuild-tools:RAKUTEN
+        imagePullPolicy: Always
+        name: sixthsense-kubernetes-agent
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: 750m
+            memory: 500Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: k8s-agent
+      serviceAccountName: k8s-agent
+      terminationGracePeriodSeconds: 30
